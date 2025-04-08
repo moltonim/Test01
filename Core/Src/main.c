@@ -63,7 +63,7 @@ __STATIC_INLINE void Configure_DutyCycle(uint32_t D);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//static uint32_t n;
+static uint32_t n;
 /* USER CODE END 0 */
 
 /**
@@ -98,10 +98,12 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   PressBttn = 0;
+  n = 25 * 1000;
+  int p = 50 * 1000;
 
   TimOutClock = SystemCoreClock/1;
-  timxPrescaler = __LL_TIM_CALC_PSC(SystemCoreClock, 10000);
-  timxPeriod = __LL_TIM_CALC_ARR(TimOutClock, timxPrescaler, 100);
+  timxPrescaler = __LL_TIM_CALC_PSC(SystemCoreClock, p);
+  timxPeriod = __LL_TIM_CALC_ARR(TimOutClock, timxPrescaler, n);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -117,9 +119,9 @@ int main(void)
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1);
 
   /* Enable counter */
-  LL_TIM_EnableCounter(TIM1);
+  //LL_TIM_EnableCounter(TIM1);
 
-  LL_TIM_EnableAllOutputs(TIM1);
+  //LL_TIM_EnableAllOutputs(TIM1);
 
   Configure_DutyCycle(50);
 
