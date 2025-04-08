@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "usart.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -36,6 +37,11 @@
 volatile uint8_t PressBttn;
 __IO uint8_t      ubFinalCharReceived = 0;
 __IO uint32_t     ubReceivedChar;
+
+uint32_t TimOutClock = 1;
+uint32_t timxPrescaler = 0;
+uint32_t timxPeriod = 0;
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,12 +58,12 @@ __IO uint32_t     ubReceivedChar;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+__STATIC_INLINE void Configure_DutyCycle(uint32_t D);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static uint32_t n;
+//static uint32_t n;
 /* USER CODE END 0 */
 
 /**
@@ -92,12 +98,33 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   PressBttn = 0;
+
+  TimOutClock = SystemCoreClock/1;
+  timxPrescaler = __LL_TIM_CALC_PSC(SystemCoreClock, 10000);
+  timxPeriod = __LL_TIM_CALC_ARR(TimOutClock, timxPrescaler, 100);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_LPUART1_UART_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+
+  /* Enable the capture/compare interrupt for channel 1 */
+  LL_TIM_EnableIT_CC1(TIM1);
+
+  /* Enable output channel 1 */
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1);
+
+  /* Enable counter */
+  LL_TIM_EnableCounter(TIM1);
+
+  LL_TIM_EnableAllOutputs(TIM1);
+
+  Configure_DutyCycle(50);
+
+  /* Force update generation */
+  LL_TIM_GenerateEvent_UPDATE(TIM1);
 
   /* USER CODE END 2 */
 
@@ -161,6 +188,22 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+__STATIC_INLINE void Configure_DutyCycle(uint32_t D)
+{
+  uint32_t P;    /* Pulse duration */
+  uint32_t T;    /* PWM signal period */
+
+  /* PWM signal period is determined by the value of the auto-reload register */
+  T = LL_TIM_GetAutoReload(TIM1) + 1;
+
+  /* Pulse duration is determined by the value of the compare register.       */
+  /* Its value is calculated in order to match the requested duty cycle.      */
+  P = (D*T)/100;
+  LL_TIM_OC_SetCompareCH1(TIM1, P);
+}
+
+
 void LPUART_CharReception_Callback(void)
 {
   /* Read Received character. RXNE flag is cleared by reading of RDR register */

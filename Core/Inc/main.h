@@ -38,6 +38,7 @@ extern "C" {
 #include "stm32u0xx_ll_cortex.h"
 #include "stm32u0xx_ll_utils.h"
 #include "stm32u0xx_ll_dma.h"
+#include "stm32u0xx_ll_tim.h"
 #include "stm32u0xx_ll_gpio.h"
 
 #if defined(USE_FULL_ASSERT)
@@ -52,6 +53,7 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 extern volatile uint8_t PressBttn;
+extern void LPUART_CharReception_Callback(void);
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
