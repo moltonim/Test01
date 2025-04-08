@@ -58,6 +58,7 @@ uint32_t timxPeriod = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+__STATIC_INLINE void Configure_DutyCycle2(uint8_t chan, uint32_t D);
 __STATIC_INLINE void Configure_DutyCycle(uint32_t D);
 /* USER CODE END PFP */
 
@@ -98,8 +99,9 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   PressBttn = 0;
-  n = 25 * 1000;
-  int p = 50 * 1000;
+  n = 20 * 1000;		//freq finale
+//  n = 100;
+  int p = 500 * 1000;
 
   TimOutClock = SystemCoreClock/1;
   timxPrescaler = __LL_TIM_CALC_PSC(SystemCoreClock, p);
@@ -117,13 +119,18 @@ int main(void)
 
   /* Enable output channel 1 */
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1);
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2);
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3);
 
   /* Enable counter */
-  //LL_TIM_EnableCounter(TIM1);
+  LL_TIM_EnableCounter(TIM1);
 
-  //LL_TIM_EnableAllOutputs(TIM1);
+  LL_TIM_EnableAllOutputs(TIM1);
 
-  Configure_DutyCycle(50);
+  //Configure_DutyCycle(50);
+  Configure_DutyCycle2(1, 50);
+  Configure_DutyCycle2(2, 25);
+  Configure_DutyCycle2(3, 75);
 
   /* Force update generation */
   LL_TIM_GenerateEvent_UPDATE(TIM1);
@@ -203,6 +210,27 @@ __STATIC_INLINE void Configure_DutyCycle(uint32_t D)
   /* Its value is calculated in order to match the requested duty cycle.      */
   P = (D*T)/100;
   LL_TIM_OC_SetCompareCH1(TIM1, P);
+}
+
+
+__STATIC_INLINE void Configure_DutyCycle2(uint8_t chan, uint32_t D)
+{
+  uint32_t P = 0;    /* Pulse duration */
+  uint32_t T = 0;    /* PWM signal period */
+
+  /* PWM signal period is determined by the value of the auto-reload register */
+  T = LL_TIM_GetAutoReload(TIM1) + 1;
+
+  /* Pulse duration is determined by the value of the compare register.       */
+  /* Its value is calculated in order to match the requested duty cycle.      */
+  P = (D*T)/100;
+  switch (chan)
+  {
+	  default:
+	  case 1:	LL_TIM_OC_SetCompareCH1(TIM1, P);	break;
+	  case 2:	LL_TIM_OC_SetCompareCH2(TIM1, P);	break;
+	  case 3:	LL_TIM_OC_SetCompareCH3(TIM1, P);	break;
+  }
 }
 
 
