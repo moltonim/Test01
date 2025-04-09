@@ -43,7 +43,7 @@ uint32_t TimOutClock = 1;
 uint32_t timxPrescaler = 0;
 uint32_t timxPeriod = 0;
 
-char R,G,B;
+int R,G,B;
 
 
 uint8_t CommBuf[100];
