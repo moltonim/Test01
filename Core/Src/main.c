@@ -44,7 +44,8 @@ uint32_t timxPrescaler = 0;
 uint32_t timxPeriod = 0;
 
 int R,G,B;
-
+int RGB;
+#define SUM_RGB		(R+G+B)
 
 uint8_t CommBuf[100];
 
@@ -85,6 +86,7 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	R = 0; G = 0; B = 0;
+	RGB = SUM_RGB;
 	memset(CommBuf, 0, sizeof(CommBuf));
   /* USER CODE END 1 */
 
@@ -149,6 +151,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  int temp_rgb = SUM_RGB;
   while (1)
   {
     /* USER CODE END WHILE */
@@ -159,6 +162,15 @@ int main(void)
 	  LL_mDelay(200);
 //	  HAL_GPIO_TogglePin(GREENLED_GPIO_Port, GREENLED_Pin);
 	  LL_GPIO_TogglePin(GREENLED_GPIO_Port, GREENLED_Pin);
+
+	  if (temp_rgb != SUM_RGB)
+	  {
+		  Configure_DutyCycle2(1, R);
+		  Configure_DutyCycle2(2, G);
+		  Configure_DutyCycle2(3, B);
+		  temp_rgb = SUM_RGB;
+	  }
+
 	  if (PressBttn)
 	  {
 		  PressBttn = 0;
