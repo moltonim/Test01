@@ -24,7 +24,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,6 +42,14 @@ __IO uint32_t     ubReceivedChar;
 uint32_t TimOutClock = 1;
 uint32_t timxPrescaler = 0;
 uint32_t timxPeriod = 0;
+
+char R,G,B;
+
+
+uint8_t CommBuf[100];
+
+int tx_pointer;
+int tx_lenbuf;
 
 /* USER CODE END PD */
 
@@ -75,7 +84,8 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+	R = 0; G = 0; B = 0;
+	memset(CommBuf, 0, sizeof(CommBuf));
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -238,6 +248,7 @@ void LPUART_CharReception_Callback(void)
 {
   /* Read Received character. RXNE flag is cleared by reading of RDR register */
   ubReceivedChar = LL_LPUART_ReceiveData8(LPUART1);
+//  LL_LPUART_IsEnabledIT_RXNE_RXFNE
 
   /* Check if received value is corresponding to specific one : S or s */
   if ((ubReceivedChar == 'S') || (ubReceivedChar == 's'))
@@ -247,10 +258,54 @@ void LPUART_CharReception_Callback(void)
 
     /* End of program : set boolean for main loop exit */
     ubFinalCharReceived = 1;
+
+    //scrivo i tre valori!
+    sprintf((char*)CommBuf, "Rx= %d; G = %d, B = %d\n", R, G, B);
+    tx_pointer = 0;
+    tx_lenbuf = strlen((char*)&CommBuf);
+    LL_LPUART_DisableIT_TC(LPUART1);
+    LL_LPUART_DisableIT_RXNE_RXFNE(LPUART1);
+    LL_LPUART_TransmitData8(LPUART1, CommBuf[tx_pointer++]);
+    LL_LPUART_EnableIT_TXE(LPUART1);
+
+    return;
   }
+
+  switch (ubReceivedChar)
+  {
+	  case 'R':		R += 2; break;
+	  case 'r':		R -= 2; break;
+	  case 'G':		G += 2; break;
+	  case 'g':		G -= 2; break;
+	  case 'B':		B += 2;	break;
+	  case 'b': 	B -= 2; break;
+
+	  default : break;
+
+  }
+
+  if (R > 100)
+	  R = 100;
+  if (R < 0)
+	  R = 0;
+
+  if (G > 100)
+	  G = 100;
+  if (G < 0)
+	  G = 0;
+
+  if (B > 100)
+  	  B = 100;
+    if (B < 0)
+  	  B = 0;
+
 
   /* Echo received character on TX */
   LL_LPUART_TransmitData8(LPUART1, ubReceivedChar);
+
+
+
+
 }
 /* USER CODE END 4 */
 

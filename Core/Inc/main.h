@@ -54,6 +54,12 @@ extern "C" {
 /* USER CODE BEGIN ET */
 extern volatile uint8_t PressBttn;
 extern void LPUART_CharReception_Callback(void);
+
+extern uint8_t CommBuf[100];
+
+extern int tx_pointer;
+extern int tx_lenbuf;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

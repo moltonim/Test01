@@ -185,28 +185,51 @@ void USART3_LPUART1_IRQHandler(void)
 	else
 	{
 		/* Call Error function */
-		Error_Handler();
+		//Error_Handler();
 	}
 
   /* USER CODE END USART3_LPUART1_IRQn 0 */
   /* USER CODE BEGIN USART3_LPUART1_IRQn 1 */
+	if(LL_LPUART_IsEnabledIT_TXE(LPUART1) && LL_LPUART_IsActiveFlag_TXE(LPUART1))
+	{
+		if (tx_pointer == (tx_lenbuf-1) )
+		{
+			// Disable TX interrupt
+			LL_LPUART_DisableIT_TXE(LPUART1);
+			// Enable TC interrupt
+			LL_LPUART_EnableIT_TC(LPUART1);
+		}
+		LL_LPUART_TransmitData8(LPUART1, CommBuf[tx_pointer++]);
+	}
+
+	if (LL_LPUART_IsActiveFlag_TC(LPUART1) && LL_LPUART_IsEnabledIT_TC(LPUART1))
+	{
+
+		LL_LPUART_DisableIT_TC(LPUART1); // Suppress interrupt when empty
+		LL_LPUART_EnableIT_RXNE_RXFNE(LPUART1);
+		// >>> set 485 direction to receive
+//		rx_pointer = 0;
+	}
+
+
+
 #ifdef	BOOTH5
-	if(LL_USART_IsEnabledIT_TXE(USART1) && LL_USART_IsActiveFlag_TXE(USART1))
+	if(LL_USART_IsEnabledIT_TXE(LPUART1) && LL_USART_IsActiveFlag_TXE(LPUART1))
 		{
 			if (tx_pointer == (tx_lenbuf-1) )
 			{
 				// Disable TX interrupt
-				LL_USART_DisableIT_TXE(USART1);
+				LL_USART_DisableIT_TXE(LPUART1);
 				// Enable TC interrupt
-				LL_USART_EnableIT_TC(USART1);
+				LL_USART_EnableIT_TC(LPUART1);
 			}
-			LL_USART_TransmitData8(USART1, CommBuf[tx_pointer++]);
+			LL_USART_TransmitData8(LPUART1, CommBuf[tx_pointer++]);
 		}
 
-		if (LL_USART_IsActiveFlag_TC(USART1) && LL_USART_IsEnabledIT_TC(USART1))
+		if (LL_USART_IsActiveFlag_TC(LPUART1) && LL_USART_IsEnabledIT_TC(LPUART1))
 		{
 
-			LL_USART_DisableIT_TC(USART1); // Suppress interrupt when empty
+			LL_USART_DisableIT_TC(LPUART1); // Suppress interrupt when empty
 			// >>> set 485 direction to receive
 			rx_pointer = 0;
 			Clear_Periph_Event(EVENT_COMM_485Rec);
