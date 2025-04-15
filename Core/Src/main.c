@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "lptim.h"
 #include "usart.h"
 #include "tim.h"
 #include "gpio.h"
@@ -38,6 +39,7 @@
 volatile uint8_t PressBttn;
 __IO uint8_t      ubFinalCharReceived = 0;
 __IO uint32_t     ubReceivedChar;
+__IO uint32_t     sTime;
 
 uint32_t TimOutClock = 1;
 uint32_t timxPrescaler = 0;
@@ -85,6 +87,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	sTime = 0;
 	R = 0; G = 0; B = 0;
 	RGB = SUM_RGB;
 	memset(CommBuf, 0, sizeof(CommBuf));
@@ -93,14 +96,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
-  LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_SYSCFG);
-
-  /* System interrupt init*/
-  NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_2);
-
-  /* SysTick_IRQn interrupt configuration */
-  NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),3, 0));
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -124,6 +120,7 @@ int main(void)
   MX_GPIO_Init();
   MX_LPUART1_UART_Init();
   MX_TIM1_Init();
+  MX_LPTIM1_Init();
   /* USER CODE BEGIN 2 */
 
   /* Enable the capture/compare interrupt for channel 1 */
@@ -212,10 +209,13 @@ void SystemClock_Config(void)
 
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
-
-  LL_Init1msTick(8000000);
-
   LL_SetSystemCoreClock(8000000);
+
+   /* Update the time base */
+  if (HAL_InitTick (TICK_INT_PRIORITY) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */

@@ -55,7 +55,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-
+extern LPTIM_HandleTypeDef hlptim1;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -127,7 +127,7 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-
+  HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -158,6 +158,29 @@ void EXTI4_15_IRQHandler(void)
   /* USER CODE BEGIN EXTI4_15_IRQn 1 */
 
   /* USER CODE END EXTI4_15_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM6, DAC and LPTIM1 global Interrupts (combined with EXTI 31).
+  */
+void TIM6_DAC_LPTIM1_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_LPTIM1_IRQn 0 */
+//	if (LL_LPTIM_IsActiveFlag_ARRM(LPTIM1))
+//	{
+//		LL_LPTIM_ClearFlag_ARRM(LPTIM1);
+
+		// Codice eseguito ogni 1 ms
+		// Esempio: toggla LED su GPIO
+		//LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_3);
+		sTime++;
+//	}
+
+  /* USER CODE END TIM6_DAC_LPTIM1_IRQn 0 */
+  HAL_LPTIM_IRQHandler(&hlptim1);
+  /* USER CODE BEGIN TIM6_DAC_LPTIM1_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_LPTIM1_IRQn 1 */
 }
 
 /**
@@ -208,7 +231,6 @@ void USART3_LPUART1_IRQHandler(void)
 		LL_LPUART_DisableIT_TC(LPUART1); // Suppress interrupt when empty
 		LL_LPUART_EnableIT_RXNE_RXFNE(LPUART1);
 		// >>> set 485 direction to receive
-//		rx_pointer = 0;
 	}
 
 
